@@ -3,7 +3,7 @@
  File: Reachability.m
  Abstract: Basic demonstration of how to use the SystemConfiguration Reachablity APIs.
  
- Version: 2.2
+ Version: 2.2.1
  
  Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple Inc.
  ("Apple") in consideration of your agreement to the following terms, and your
@@ -61,8 +61,9 @@
 static void PrintReachabilityFlags(SCNetworkReachabilityFlags    flags, const char* comment)
 {
 #if kShouldPrintReachabilityFlags
-	
-    NSLog(@"Reachability Flag Status: %c%c %c%c%c%c%c%c%c %s\n",
+
+#if	TARGET_OS_IPHONE
+    DLog(@"Reachability Flag Status: %c%c %c%c%c%c%c%c%c %s\n",
 			(flags & kSCNetworkReachabilityFlagsIsWWAN)				  ? 'W' : '-',
 			(flags & kSCNetworkReachabilityFlagsReachable)            ? 'R' : '-',
 			
@@ -75,6 +76,21 @@ static void PrintReachabilityFlags(SCNetworkReachabilityFlags    flags, const ch
 			(flags & kSCNetworkReachabilityFlagsIsDirect)             ? 'd' : '-',
 			comment
 			);
+#else
+    DLog(@"Reachability Flag Status: %c %c%c%c%c%c%c%c %s\n",
+          (flags & kSCNetworkReachabilityFlagsReachable)            ? 'R' : '-',
+          
+          (flags & kSCNetworkReachabilityFlagsTransientConnection)  ? 't' : '-',
+          (flags & kSCNetworkReachabilityFlagsConnectionRequired)   ? 'c' : '-',
+          (flags & kSCNetworkReachabilityFlagsConnectionOnTraffic)  ? 'C' : '-',
+          (flags & kSCNetworkReachabilityFlagsInterventionRequired) ? 'i' : '-',
+          (flags & kSCNetworkReachabilityFlagsConnectionOnDemand)   ? 'D' : '-',
+          (flags & kSCNetworkReachabilityFlagsIsLocalAddress)       ? 'l' : '-',
+          (flags & kSCNetworkReachabilityFlagsIsDirect)             ? 'd' : '-',
+          comment
+          );
+#endif
+    
 #endif
 }
 
@@ -232,12 +248,15 @@ static void ReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
 			}
 		}
 	
+#if	TARGET_OS_IPHONE
 	if ((flags & kSCNetworkReachabilityFlagsIsWWAN) == kSCNetworkReachabilityFlagsIsWWAN)
 	{
 		// ... but WWAN connections are OK if the calling application
 		//     is using the CFNetwork (CFSocketStream?) APIs.
 		retVal = ReachableViaWWAN;
 	}
+#endif
+    
 	return retVal;
 }
 
